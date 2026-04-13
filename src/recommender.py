@@ -1,3 +1,4 @@
+import csv
 from typing import List, Dict, Tuple, Optional
 from dataclasses import dataclass
 
@@ -50,9 +51,31 @@ def load_songs(csv_path: str) -> List[Dict]:
     Loads songs from a CSV file.
     Required by src/main.py
     """
-    # TODO: Implement CSV loading logic
-    print(f"Loading songs from {csv_path}...")
-    return []
+    songs: List[Dict] = []
+
+    def parse_number(value: str):
+        if "." in value:
+            return float(value)
+        return int(value)
+
+    with open(csv_path, newline="", encoding="utf-8") as csv_file:
+        reader = csv.DictReader(csv_file)
+        for row in reader:
+            song = {
+                "id": parse_number(row["id"]),
+                "title": row["title"],
+                "artist": row["artist"],
+                "genre": row["genre"],
+                "mood": row["mood"],
+                "energy": parse_number(row["energy"]),
+                "tempo_bpm": parse_number(row["tempo_bpm"]),
+                "valence": parse_number(row["valence"]),
+                "danceability": parse_number(row["danceability"]),
+                "acousticness": parse_number(row["acousticness"]),
+            }
+            songs.append(song)
+
+    return songs
 
 def recommend_songs(user_prefs: Dict, songs: List[Dict], k: int = 5) -> List[Tuple[Dict, float, str]]:
     """
