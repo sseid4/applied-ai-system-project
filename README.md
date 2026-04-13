@@ -83,6 +83,12 @@ pytest
 
 You can add more tests in `tests/test_recommender.py`.
 
+### Terminal Output Screenshot
+
+Below is the terminal output showing the top recommendations from `python -m src.main`:
+
+![Terminal output with recommendations](Screenshot_loaded_song.png)
+
 ---
 
 ## Experiments You Tried
