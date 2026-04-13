@@ -17,7 +17,16 @@ Replace this paragraph with your own summary of what your version does.
 
 ## How The System Works
 
-Real-world recommendation systems usually score many items against a user's preferences, then rank the best matches and may add extra rules for variety or freshness. In my simulation, I will prioritize songs that match the user's genre and mood, are close to the user's target energy, and feel more aligned with their listening style instead of simply rewarding higher or lower values.
+Real-world recommendation systems score many items against a user's preferences, then rank the best matches and may add extra rules for variety or freshness. My version will do the same in a simple way: it will judge every song in the CSV one by one, assign points for how well each song matches the user's taste profile, and then sort the full list to produce the top recommendations.
+
+**Algorithm Recipe**
+
+- `+2.0` points for a genre match
+- `+1.0` point for a mood match
+- up to `+2.0` points for energy similarity based on how close the song's energy is to the user's target energy
+- add up the points for each song, then rank songs from highest score to lowest score
+
+This means the system will strongly prefer songs that match the user's genre and mood, while still rewarding songs that feel close in energy instead of only higher or lower. A potential bias is that it might over-prioritize genre and miss great songs that match the user's mood and energy but belong to a different genre.
 
 `Song` will use these features:
 
