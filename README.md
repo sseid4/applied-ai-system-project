@@ -1,253 +1,144 @@
-# 🎵 Music Recommender Simulation
+# Music Recommender Simulation
 
 ## Project Summary
 
-In this project you will build and explain a small music recommender system.
+This project is a lightweight AI music recommender that ranks songs based on a user taste profile. It loads songs from a CSV dataset, scores each song with transparent rules, returns top recommendations, and explains why each recommendation was chosen.
 
-Your goal is to:
+The system is designed to be reproducible, testable, and safe to run in classroom settings.
 
-- Represent songs and a user "taste profile" as data
-- Design a scoring rule that turns that data into recommendations
-- Evaluate what your system gets right and wrong
-- Reflect on how this mirrors real world AI recommenders
+## Assignment Feature Implemented: Reliability and Testing System
 
-Replace this paragraph with your own summary of what your version does.
+This project includes a reliability/testing feature integrated into the core app behavior:
 
----
+- The main runner evaluates multiple user profiles, including adversarial and edge-case profiles.
+- The recommender generates per-song explanations to make score behavior auditable.
+- Unit tests validate expected ranking and explanation behavior.
+- Input guardrails clamp out-of-range numeric values and log warnings.
 
-## How The System Works
+This feature is part of the main recommendation flow, not a separate script.
 
-Real-world recommendation systems score many items against a user's preferences, then rank the best matches and may add extra rules for variety or freshness. My version will do the same in a simple way: it will judge every song in the CSV one by one, assign points for how well each song matches the user's taste profile, and then sort the full list to produce the top recommendations.
+## How the System Works
 
-**Algorithm Recipe**
+For each song, the recommender computes a score using:
 
-- `+2.0` points for a genre match
-- `+1.0` point for a mood match
-- up to `+2.0` points for energy similarity based on how close the song's energy is to the user's target energy
-- add up the points for each song, then rank songs from highest score to lowest score
+- Genre match bonus
+- Mood match bonus
+- Energy similarity reward
+- Acoustic preference alignment bonus
 
-This means the system will strongly prefer songs that match the user's genre and mood, while still rewarding songs that feel close in energy instead of only higher or lower. A potential bias is that it might over-prioritize genre and miss great songs that match the user's mood and energy but belong to a different genre.
+Songs are sorted by final score and the top-k are returned.
 
-`Song` will use these features:
+### Data Inputs
 
-- `id`
-- `title`
-- `artist`
-- `genre`
-- `mood`
-- `energy`
-- `tempo_bpm`
-- `valence`
-- `danceability`
-- `acousticness`
+Song features:
 
-`UserProfile` will use these features:
+- id
+- title
+- artist
+- genre
+- mood
+- energy
+- tempo_bpm
+- valence
+- danceability
+- acousticness
 
-- `favorite_genre`
-- `favorite_mood`
-- `target_energy`
-- `likes_acoustic`
+User profile features:
 
----
+- favorite_genre
+- favorite_mood
+- target_energy
+- likes_acoustic
 
-## Getting Started
+## Guardrails and Logging
 
-### Setup
+The system includes runtime safeguards:
 
-1. Create a virtual environment (optional but recommended):
+- Numeric values expected in [0, 1] are clamped if out of range.
+- Missing or malformed numeric values fall back to safe defaults.
+- Startup exits with a clear error if the CSV file is missing or empty.
+- Logging is enabled in the CLI runner for startup, warnings, and failure paths.
 
-   ```bash
-   python -m venv .venv
-   source .venv/bin/activate      # Mac or Linux
-   .venv\Scripts\activate         # Windows
+## Project Structure
 
-2. Install dependencies
+- src/: recommender logic and CLI entry point
+- data/: CSV dataset
+- tests/: automated tests
+- assets/: screenshots and architecture images
+
+## Setup
+
+1. Create and activate a virtual environment.
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+```
+
+2. Install dependencies.
 
 ```bash
 pip install -r requirements.txt
 ```
 
-3. Run the app:
+## Run the App
 
 ```bash
 python -m src.main
 ```
 
-### Running Tests
-
-Run the starter tests with:
+## Run Tests
 
 ```bash
-pytest
+PYTHONPATH=. pytest -q
 ```
 
-You can add more tests in `tests/test_recommender.py`.
+## Design and Architecture
 
-### Step 1: Profile Recommendation Screenshots
+This diagram shows the main system components, data flow, and where human/testing feedback validates AI behavior.
 
-Below are terminal screenshots showing the top 5 recommendations for each tested profile from `python -m src.main`.
+```mermaid
+flowchart TD
+	A[User / Student Input\nTaste Profile] --> B[CLI Runner\nsrc/main.py]
+	B --> C[Data Loader\nload_songs from data/songs.csv]
+	C --> D[Recommender Engine\nscore_song + recommend_songs]
+	D --> E[Top-K Ranked Recommendations\nwith Explanations]
+	E --> F[Terminal Output]
 
-High-Energy Pop:
+	B --> G[Evaluation Profiles\nNormal + Adversarial + Edge Case]
+	G --> D
 
-![High-Energy Pop recommendations](Screenshot 1.png)
+	H[Pytest Test Suite\ntests/test_recommender.py] --> D
+	I[Human Review\nCheck explanation quality and ranking reasonableness] --> F
+	I --> J[Adjust scoring weights/logic]
+	J --> D
+```
 
-Chill Lofi:
+Key checks in this architecture:
 
-![Chill Lofi recommendations](Screenshot 2.png)
+- Automated testing: Pytest verifies recommendation and explanation behavior.
+- Human-in-the-loop review: The user inspects outputs and explanations for quality.
+- Reliability loops: Adversarial and edge-case profiles stress-test behavior.
 
-Deep Intense Rock:
+## Screenshots
 
-![Deep Intense Rock recommendations](Screenshot 3.png)
+Store all project visuals in assets/.
 
-Adversarial Conflict (High Energy + Sad):
+- High-Energy Pop: ![High-Energy Pop](assets/Screenshot%201.png)
+- Chill Lofi: ![Chill Lofi](assets/Screenshot%202.png)
+- Deep Intense Rock: ![Deep Intense Rock](assets/Screenshot%203.png)
+- Adversarial Conflict: ![Adversarial](assets/Screenshot%204.png)
+- Edge Case Profile: ![Edge Case](assets/Screenshot%205.png)
 
-![Adversarial profile recommendations](Screenshot 4.png)
-
-Edge Case (Unknown Genre + Very Low Energy):
-
-![Edge-case profile recommendations](Screenshot 5.png)
-
----
-
-## Experiments You Tried
-
-Use this section to document the experiments you ran. For example:
-
-- What happened when you changed the weight on genre from 2.0 to 0.5
-- What happened when you added tempo or valence to the score
-- How did your system behave for different types of users
-
----
+If you use Mermaid diagrams, generate them in Mermaid Live Editor and export PNG files into assets/.
 
 ## Limitations and Risks
 
-Summarize some limitations of your recommender.
+- The dataset is small and synthetic, so recommendations are not production-grade.
+- Rule-based scoring may over-prioritize selected features and under-represent nuance.
+- User preference inputs are simple and do not capture evolving taste.
 
-Examples:
+## Reflection and Documentation
 
-- It only works on a tiny catalog
-- It does not understand lyrics or language
-- It might over favor one genre or mood
-
-You will go deeper on this in your model card.
-
----
-
-## Reflection
-
-Read and complete `model_card.md`:
-
-[**Model Card**](model_card.md)
-
-Write 1 to 2 paragraphs here about what you learned:
-
-- about how recommenders turn data into predictions
-- about where bias or unfairness could show up in systems like this
-
-
----
-
-## 7. `model_card_template.md`
-
-Combines reflection and model card framing from the Module 3 guidance. :contentReference[oaicite:2]{index=2}
-
-```markdown
-# 🎧 Model Card - Music Recommender Simulation
-
-## 1. Model Name
-
-Give your recommender a name, for example:
-
-> VibeFinder 1.0
-
----
-
-## 2. Intended Use
-
-- What is this system trying to do
-- Who is it for
-
-Example:
-
-> This model suggests 3 to 5 songs from a small catalog based on a user's preferred genre, mood, and energy level. It is for classroom exploration only, not for real users.
-
----
-
-## 3. How It Works (Short Explanation)
-
-Describe your scoring logic in plain language.
-
-- What features of each song does it consider
-- What information about the user does it use
-- How does it turn those into a number
-
-Try to avoid code in this section, treat it like an explanation to a non programmer.
-
----
-
-## 4. Data
-
-Describe your dataset.
-
-- How many songs are in `data/songs.csv`
-- Did you add or remove any songs
-- What kinds of genres or moods are represented
-- Whose taste does this data mostly reflect
-
----
-
-## 5. Strengths
-
-Where does your recommender work well
-
-You can think about:
-- Situations where the top results "felt right"
-- Particular user profiles it served well
-- Simplicity or transparency benefits
-
----
-
-## 6. Limitations and Bias
-
-Where does your recommender struggle
-
-Some prompts:
-- Does it ignore some genres or moods
-- Does it treat all users as if they have the same taste shape
-- Is it biased toward high energy or one genre by default
-- How could this be unfair if used in a real product
-
----
-
-## 7. Evaluation
-
-How did you check your system
-
-Examples:
-- You tried multiple user profiles and wrote down whether the results matched your expectations
-- You compared your simulation to what a real app like Spotify or YouTube tends to recommend
-- You wrote tests for your scoring logic
-
-You do not need a numeric metric, but if you used one, explain what it measures.
-
----
-
-## 8. Future Work
-
-If you had more time, how would you improve this recommender
-
-Examples:
-
-- Add support for multiple users and "group vibe" recommendations
-- Balance diversity of songs instead of always picking the closest match
-- Use more features, like tempo ranges or lyric themes
-
----
-
-## 9. Personal Reflection
-
-A few sentences about what you learned:
-
-- What surprised you about how your system behaved
-- How did building this change how you think about real music recommenders
-- Where do you think human judgment still matters, even if the model seems "smart"
+- Model card: model_card.md
+- Reflection: reflection.md
