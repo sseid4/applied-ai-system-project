@@ -9,12 +9,32 @@ You will implement the functions in recommender.py:
 - recommend_songs
 """
 
+import logging
+import sys
+
 from .recommender import load_songs, recommend_songs
 
 
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s | %(levelname)s | %(name)s | %(message)s",
+)
+
+LOGGER = logging.getLogger(__name__)
+
+
 def main() -> None:
-    songs = load_songs("data/songs.csv")
-    print(f"Loaded songs: {len(songs)}")
+    try:
+        songs = load_songs("data/songs.csv")
+    except FileNotFoundError as exc:
+        LOGGER.error("Unable to start recommender: %s", exc)
+        sys.exit(1)
+
+    if not songs:
+        LOGGER.error("No songs loaded from data/songs.csv. Exiting.")
+        sys.exit(1)
+
+    LOGGER.info("Loaded songs: %s", len(songs))
 
     profiles = {
         "High-Energy Pop": {
@@ -53,6 +73,9 @@ def main() -> None:
     print("\nSystem Evaluation: Top 5 recommendations per profile\n")
     for profile_name, taste_profile in profiles.items():
         recommendations = recommend_songs(taste_profile, songs, k=5)
+        if not recommendations:
+            LOGGER.warning("No recommendations generated for profile '%s'", profile_name)
+            continue
 
         print(f"=== {profile_name} ===")
         for idx, rec in enumerate(recommendations, start=1):
