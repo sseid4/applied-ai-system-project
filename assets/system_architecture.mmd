@@ -1,0 +1,14 @@
+flowchart TD
+    A[User / Student Input\nTaste Profile] --> B[CLI Runner\nsrc/main.py]
+    B --> C[Data Loader\nload_songs from data/songs.csv]
+    C --> D[Recommender Engine\nscore_song + recommend_songs]
+    D --> E[Top-K Ranked Recommendations\nwith Explanations]
+    E --> F[Terminal Output]
+
+    B --> G[Evaluation Profiles\nNormal + Adversarial + Edge Case]
+    G --> D
+
+    H[Pytest Test Suite\ntests/test_recommender.py] --> D
+    I[Human Review\nCheck explanation quality and ranking reasonableness] --> F
+    I --> J[Adjust scoring weights/logic]
+    J --> D
